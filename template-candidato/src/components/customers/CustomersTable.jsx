@@ -43,14 +43,14 @@ function CustomersTable({ customers, onEdit }) {
         <h2 className="text-sm font-semibold">Lista de Clientes</h2>
       </header>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-[760px] w-full text-sm">
+      <div className="md:overflow-x-auto">
+        <table className="w-full text-sm md:min-w-[760px]">
           <thead className="text-left text-xs text-muted-foreground">
             <tr className="border-b border-border/50">
               <th className="px-4 py-3 font-medium">Nome</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Telefone</th>
-              <th className="px-4 py-3 font-medium">Criado em</th>
+              <th className="px-4 py-3 font-medium hidden md:table-cell">Email</th>
+              <th className="px-4 py-3 font-medium hidden md:table-cell">Telefone</th>
+              <th className="px-4 py-3 font-medium hidden md:table-cell">Criado em</th>
               <th className="px-4 py-3 font-medium text-right">Ações</th>
             </tr>
           </thead>
@@ -71,13 +71,13 @@ function CustomersTable({ customers, onEdit }) {
                   className="border-b border-border/50 transition-colors hover:bg-muted/40"
                 >
                   <td className="px-4 py-3 font-medium">{customer.nome}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                     {customer.email}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                     {customer.telefone}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                     {formatDate(customer.createdAt)}
                   </td>
                   <td className="px-4 py-3 text-right">

@@ -26,7 +26,7 @@ function DashboardPage() {
 
   const latestOrders = [...mockOrders]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 8);
+    .slice(0, 12);
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat('pt-BR', {

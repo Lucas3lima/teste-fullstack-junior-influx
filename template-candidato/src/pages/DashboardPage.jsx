@@ -8,25 +8,26 @@ import {
 } from 'lucide-react';
 import MetricCard from '@/components/dashboard/MetricCard';
 import OrdersTable from '@/components/dashboard/OrdersTable';
-import { mockOrders } from '@/mocks/dashboardMock';
+import { getOrders } from '@/api/orders';
+import { useQuery } from '@tanstack/react-query';
 
 function DashboardPage() {
-  const total = mockOrders.length;
-  const pendentes = mockOrders.filter((order) => order.status === 'Pendente').length;
-  const emAndamento = mockOrders.filter(
-    (order) => order.status === 'Em Andamento'
-  ).length;
-  const finalizadas = mockOrders.filter(
-    (order) => order.status === 'Finalizada'
-  ).length;
-  const canceladas = mockOrders.filter((order) => order.status === 'Cancelada').length;
-  const faturamento = mockOrders
-    .filter((order) => order.status === 'Finalizada')
-    .reduce((sum, order) => sum + order.valor, 0);
+  const { data } = useQuery({
+    queryKey: ['orders'],
+    queryFn: getOrders,
+    staleTime: 30_000,
+  });
 
-  const latestOrders = [...mockOrders]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 12);
+  const orders = data ?? [];
+  
+  const total = orders.length;
+  const pendentes = orders.filter((order) => order.status === 'Pendente').length;
+  const emAndamento = orders.filter((order) => order.status === 'Em Andamento').length;
+  const finalizadas = orders.filter((order) => order.status === 'Finalizada').length;
+  const canceladas = orders.filter((order) => order.status === 'Cancelada').length;
+  const faturamento = orders.filter((order) => order.status === 'Finalizada').reduce((sum, order) => sum + order.valor, 0);
+
+  const latestOrders = [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 12);
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat('pt-BR', {

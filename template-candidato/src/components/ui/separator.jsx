@@ -1,0 +1,15 @@
+import { cn } from '@/lib/utils';
+
+export function Separator({ orientation = 'horizontal', className }) {
+  return (
+    <div
+      role="separator"
+      aria-orientation={orientation}
+      className={cn(
+        'shrink-0 bg-sidebar-border',
+        orientation === 'horizontal' ? 'h-px w-full' : 'h-full w-px',
+        className
+      )}
+    />
+  );
+}

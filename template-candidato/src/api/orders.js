@@ -19,6 +19,7 @@ function normalizeOrderListRow(row) {
   const order = parseApi(orderListRowSchema, row, 'normalizeOrderListRow');
   return {
     id: order.id,
+    cliente_id: order.cliente_id,
     cliente: order.clientes.nome,
     descricao: order.descricao,
     valor: order.valor,
@@ -32,6 +33,7 @@ export async function getOrders() {
     .from('ordens_servico')
     .select(`
       id,
+      cliente_id,
       descricao,
       valor,
       status,

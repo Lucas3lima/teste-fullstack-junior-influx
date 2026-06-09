@@ -9,6 +9,7 @@ export const orderStatusSchema = z.enum([
 
 export const orderListRowSchema = z.object({
   id: z.uuid(),
+  cliente_id: z.uuid(),
   descricao: z.string().trim().min(1),
   valor: z.coerce.number().nonnegative(),
   status: orderStatusSchema,

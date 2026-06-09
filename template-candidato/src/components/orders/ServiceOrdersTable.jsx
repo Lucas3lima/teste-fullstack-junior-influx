@@ -3,7 +3,7 @@ import PaginationControls from '@/components/shared/PaginationControls';
 import StatusBadge from '@/components/dashboard/StatusBadge';
 import OrderActionsMenu from './OrderActionsMenu';
 
-function ServiceOrdersTable({ orders, formatCurrency, formatDate }) {
+function ServiceOrdersTable({ orders, formatCurrency, formatDate, onOrderAction }) {
   const pageSize = 10;
   const [page, setPage] = useState(1);
 
@@ -73,7 +73,7 @@ function ServiceOrdersTable({ orders, formatCurrency, formatDate }) {
                     {formatDate(order.createdAt)}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <OrderActionsMenu order={order} />
+                    <OrderActionsMenu order={order} onAction={onOrderAction} />
                   </td>
                 </tr>
               ))

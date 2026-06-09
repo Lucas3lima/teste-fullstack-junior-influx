@@ -16,7 +16,14 @@ const EMPTY_FORM = {
   telefone: '',
 };
 
-function CustomerDialog({ open, onOpenChange, mode, initialCustomer, onSubmit }) {
+function CustomerDialog({
+  open,
+  onOpenChange,
+  mode,
+  initialCustomer,
+  onSubmit,
+  isSubmitting = false,
+}) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
 
@@ -86,7 +93,7 @@ function CustomerDialog({ open, onOpenChange, mode, initialCustomer, onSubmit })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-md sm:max-w-lg ">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -102,6 +109,7 @@ function CustomerDialog({ open, onOpenChange, mode, initialCustomer, onSubmit })
               value={form.nome}
               onChange={handleChange('nome')}
               placeholder="Nome do cliente"
+              className="md:text-sm text-xs"
             />
             {errors.nome && (
               <p className="text-xs text-destructive">{errors.nome}</p>
@@ -118,6 +126,7 @@ function CustomerDialog({ open, onOpenChange, mode, initialCustomer, onSubmit })
               value={form.email}
               onChange={handleChange('email')}
               placeholder="email@exemplo.com"
+              className="md:text-sm text-xs"
             />
             {errors.email && (
               <p className="text-xs text-destructive">{errors.email}</p>
@@ -133,6 +142,7 @@ function CustomerDialog({ open, onOpenChange, mode, initialCustomer, onSubmit })
               value={form.telefone}
               onChange={handleChange('telefone')}
               placeholder="(11) 99999-9999"
+              className="md:text-sm text-xs"
             />
             {errors.telefone && (
               <p className="text-xs text-destructive">{errors.telefone}</p>
@@ -143,11 +153,15 @@ function CustomerDialog({ open, onOpenChange, mode, initialCustomer, onSubmit })
             <Button
               type="button"
               variant="outline"
+              disabled={isSubmitting}
               onClick={() => onOpenChange(false)}
+              className="md:text-sm text-xs"
             >
               Cancelar
             </Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit" disabled={isSubmitting} className="md:text-sm text-xs">
+              {isSubmitting ? 'Salvando...' : 'Salvar'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

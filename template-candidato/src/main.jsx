@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import AppRouter from './routes/AppRouter'
+import { Toaster } from '@/components/ui/sonner'
 
 const queryClient = new QueryClient()
 
@@ -10,6 +11,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
       <QueryClientProvider client={queryClient}>
         <AppRouter />
+        <Toaster />
       </QueryClientProvider>
   </StrictMode>,
 )

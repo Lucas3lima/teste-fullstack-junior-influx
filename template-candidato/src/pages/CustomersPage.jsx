@@ -1,45 +1,66 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { SearchInput } from "@/components/ui/search-input";
-import { Plus } from "lucide-react";
-import CustomersTable from "@/components/customers/CustomersTable";
-import { mockCustomers } from "@/mocks/customersMock";
-import CustomerDialog from "@/components/customers/CustomerDialog";
+import { useState } from 'react';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/search-input';
+import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import CustomersTable from '@/components/customers/CustomersTable';
+import CustomerDialog from '@/components/customers/CustomerDialog';
+import {
+  createCustomer,
+  getCustomers,
+  updateCustomer,
+} from '@/api/customers';
 
 function CustomersPage() {
-  const [customers, setCustomers] = useState(mockCustomers);
+  const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
 
-  const handleCreateSubmit = (payload) => {
-    const created = {
-      id: `customer-${Date.now()}`,
-      nome: payload.nome,
-      email: payload.email,
-      telefone: payload.telefone,
-      createdAt: new Date().toISOString(),
-    };
-    setCustomers((prev) => [created, ...prev]);
-    console.log("Cliente criado (mock)", created);
-    setIsCreateOpen(false);
-  };
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['customers'],
+    queryFn: getCustomers,
+    staleTime: 30_000,
+  });
 
-  const handleEditSubmit = (payload) => {
-    setCustomers((prev) =>
-      prev.map((customer) =>
-        customer.id === payload.id
-          ? {
-              ...customer,
-              nome: payload.nome,
-              email: payload.email,
-              telefone: payload.telefone,
-            }
-          : customer
-      )
-    );
-    console.log("Cliente atualizado (mock)", payload);
-    setEditingCustomer(null);
-  };
+  const customers = data ?? [];
+  const createMutation = useMutation({
+    mutationFn: createCustomer,
+    onSuccess: () => {
+      toast.success('Cliente criado com sucesso.');
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      setIsCreateOpen(false);
+    },
+    onError: (mutationError) => {
+      toast.error(
+        mutationError?.message ?? 'Nao foi possivel criar o cliente.'
+      );
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateCustomer,
+    onSuccess: () => {
+      toast.success('Cliente atualizado com sucesso.');
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      setEditingCustomer(null);
+    },
+    onError: (mutationError) => {
+      toast.error(
+        mutationError?.message ?? 'Nao foi possivel atualizar o cliente.'
+      );
+    },
+  });
 
   return (
     <section className="space-y-4">
@@ -50,7 +71,10 @@ function CustomersPage() {
             {customers.length} clientes cadastrados
           </p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <Button
+          type="button"
+          onClick={() => setIsCreateOpen(true)}
+        >
           <Plus className="size-4" />
           Novo Cliente
         </Button>
@@ -59,6 +83,27 @@ function CustomersPage() {
       <div className="flex items-center gap-2">
         <SearchInput placeholder="Pesquisar cliente" />
       </div>
+
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Carregando clientes...</p>
+      ) : null}
+
+      {isError ? (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2">
+          <p className="text-sm text-destructive">
+            Erro ao carregar clientes: {error?.message ?? 'tente novamente.'}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            onClick={() => refetch()}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      ) : null}
 
       <CustomersTable
         customers={customers}
@@ -69,17 +114,21 @@ function CustomersPage() {
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         mode="create"
-        onSubmit={handleCreateSubmit}
+        isSubmitting={createMutation.isPending}
+        onSubmit={(payload) => createMutation.mutate(payload)}
       />
 
       <CustomerDialog
         open={Boolean(editingCustomer)}
         onOpenChange={(open) => {
-          if (!open) setEditingCustomer(null);
+          if (!open && !updateMutation.isPending) {
+            setEditingCustomer(null);
+          }
         }}
         mode="edit"
         initialCustomer={editingCustomer}
-        onSubmit={handleEditSubmit}
+        isSubmitting={updateMutation.isPending}
+        onSubmit={(payload) => updateMutation.mutate(payload)}
       />
     </section>
   );

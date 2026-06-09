@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 
 export function DesktopSidebar() {
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+    <aside className="sticky top-0 self-start flex min-h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-2 px-4 py-4">
         <Wrench className="size-5 text-sidebar-primary" />
         <span className="text-base font-bold">TecFix OS</span>

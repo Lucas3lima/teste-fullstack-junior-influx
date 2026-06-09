@@ -1,130 +1,99 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../supabaseClient';
+import {
+  Activity,
+  BadgeDollarSign,
+  CheckCircle2,
+  Clock3,
+  ListTodo,
+  XCircle,
+} from 'lucide-react';
+import MetricCard from '@/components/dashboard/MetricCard';
+import OrdersTable from '@/components/dashboard/OrdersTable';
+import { mockOrders } from '@/mocks/dashboardMock';
 
 function DashboardPage() {
-  const queryClient = useQueryClient();
-  const supabaseHost = import.meta.env.VITE_SUPABASE_URL || null;
-  const hasAnonKey = Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY);
+  const total = mockOrders.length;
+  const pendentes = mockOrders.filter((order) => order.status === 'Pendente').length;
+  const emAndamento = mockOrders.filter(
+    (order) => order.status === 'Em Andamento'
+  ).length;
+  const finalizadas = mockOrders.filter(
+    (order) => order.status === 'Finalizada'
+  ).length;
+  const canceladas = mockOrders.filter((order) => order.status === 'Cancelada').length;
+  const faturamento = mockOrders
+    .filter((order) => order.status === 'Finalizada')
+    .reduce((sum, order) => sum + order.valor, 0);
 
-  const clientesQuery = useQuery({
-    queryKey: ['clientes'],
-    queryFn: async () => {
-      const response = await supabase
-        .from('clientes')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+  const latestOrders = [...mockOrders]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 8);
 
-      if (response.error) {
-        throw response.error;
-      }
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
 
-      return response.data ?? [];
-    },
-  });
-
-  const ordensServicoQuery = useQuery({
-    queryKey: ['ordens-servico'],
-    queryFn: async () => {
-      const response = await supabase
-        .from('ordens_servico')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (response.error) {
-        throw response.error;
-      }
-
-      return response.data ?? [];
-    },
-  });
-
-  const debugState = {
-    env: {
-      hasSupabaseUrl: Boolean(supabaseHost),
-      supabaseHost,
-      hasAnonKey,
-    },
-    queries: {
-      clientes: {
-        isPending: clientesQuery.isPending,
-        isFetching: clientesQuery.isFetching,
-        isError: clientesQuery.isError,
-        error: clientesQuery.error
-          ? {
-              message: clientesQuery.error.message,
-              details: clientesQuery.error.details ?? null,
-              hint: clientesQuery.error.hint ?? null,
-              code: clientesQuery.error.code ?? null,
-            }
-          : null,
-        rows: clientesQuery.data ?? [],
-      },
-      ordensServico: {
-        isPending: ordensServicoQuery.isPending,
-        isFetching: ordensServicoQuery.isFetching,
-        isError: ordensServicoQuery.isError,
-        error: ordensServicoQuery.error
-          ? {
-              message: ordensServicoQuery.error.message,
-              details: ordensServicoQuery.error.details ?? null,
-              hint: ordensServicoQuery.error.hint ?? null,
-              code: ordensServicoQuery.error.code ?? null,
-            }
-          : null,
-        rows: ordensServicoQuery.data ?? [],
-      },
-    },
-  };
+  const formatDate = (isoDate) =>
+    new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(isoDate));
 
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-bold">Dashboard</h2>
+      <header className="space-y-1">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">
+          Visao geral da assistencia técnica
+        </p>
+      </header>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => clientesQuery.refetch()}
-          className="rounded bg-blue-600 px-4 py-2 font-medium hover:bg-blue-500"
-        >
-          Recarregar clientes
-        </button>
-        <button
-          type="button"
-          onClick={() => ordensServicoQuery.refetch()}
-          className="rounded bg-indigo-600 px-4 py-2 font-medium hover:bg-indigo-500"
-        >
-          Recarregar ordens
-        </button>
-        <button
-          type="button"
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['clientes'] })}
-          className="rounded bg-slate-700 px-4 py-2 font-medium hover:bg-slate-600"
-        >
-          Invalidate clientes
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            queryClient.invalidateQueries({ queryKey: ['ordens-servico'] })
-          }
-          className="rounded bg-slate-700 px-4 py-2 font-medium hover:bg-slate-600"
-        >
-          Invalidate ordens
-        </button>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        <MetricCard
+          title="Total de OS"
+          value={total}
+          icon={ListTodo}
+          iconClassName="text-blue-300"
+        />
+        <MetricCard
+          title="Pendentes"
+          value={pendentes}
+          icon={Clock3}
+          iconClassName="text-red-300"
+        />
+        <MetricCard
+          title="Em Andamento"
+          value={emAndamento}
+          icon={Activity}
+          iconClassName="text-amber-300"
+        />
+        <MetricCard
+          title="Finalizadas"
+          value={finalizadas}
+          icon={CheckCircle2}
+          iconClassName="text-emerald-300"
+        />
+        <MetricCard
+          title="Canceladas"
+          value={canceladas}
+          icon={XCircle}
+          iconClassName="text-slate-300"
+        />
+        <MetricCard
+          title="Faturamento"
+          value={formatCurrency(faturamento)}
+          icon={BadgeDollarSign}
+          iconClassName="text-blue-300"
+        />
       </div>
 
-      {(!supabaseHost || !hasAnonKey) && (
-        <p className="rounded border border-yellow-500 bg-yellow-900/30 p-3 text-sm text-yellow-200">
-          Configuracao incompleta: revise VITE_SUPABASE_URL e
-          VITE_SUPABASE_ANON_KEY no arquivo .env e reinicie o Vite.
-        </p>
-      )}
-
-      <pre className="overflow-auto rounded border border-slate-700 bg-slate-900 p-4 text-sm">
-        {JSON.stringify(debugState, null, 2)}
-      </pre>
+      <OrdersTable
+        orders={latestOrders}
+        formatCurrency={formatCurrency}
+        formatDate={formatDate}
+      />
     </section>
   );
 }

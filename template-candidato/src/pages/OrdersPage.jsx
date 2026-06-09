@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
 import ServiceOrdersTable from '@/components/orders/ServiceOrdersTable';
-import { mockServiceOrders } from '@/mocks/ordersMock';
 import { Plus } from 'lucide-react';
+import { getOrders } from '@/api/orders';
+import { useQuery } from '@tanstack/react-query';
 
 const STATUS_FILTERS = [
   'Todos',
@@ -16,12 +17,20 @@ const STATUS_FILTERS = [
 function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState('Todos');
 
+  const { data } = useQuery({
+    queryKey: ['orders'],
+    queryFn: getOrders,
+    staleTime: 30_000,
+  });
+
+  const orders = data ?? [];
+
   const filteredOrders = useMemo(() => {
     if (statusFilter === 'Todos') {
-      return mockServiceOrders;
+      return orders;
     }
-    return mockServiceOrders.filter((order) => order.status === statusFilter);
-  }, [statusFilter]);
+    return orders.filter((order) => order.status === statusFilter);
+  }, [orders, statusFilter]);
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat('pt-BR', {
@@ -44,7 +53,7 @@ function OrdersPage() {
             Ordens de Servico
           </h1>
           <p className="text-sm text-muted-foreground">
-            {filteredOrders.length} OS exibidas
+            {orders.length} OS exibidas
           </p>
         </div>
         <Button>

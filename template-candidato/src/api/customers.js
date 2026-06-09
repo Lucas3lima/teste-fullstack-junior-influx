@@ -1,9 +1,16 @@
 import { supabase } from '@/supabaseClient';
+import { parseApi, parseApiList } from '@/lib/parseApi';
+import {
+  createCustomerInputSchema,
+  customerRowSchema,
+  updateCustomerInputSchema,
+} from '@/schemas/customers';
 
 function normalizeCustomer(row) {
+  const customer = parseApi(customerRowSchema, row, 'normalizeCustomer');
   return {
-    ...row,
-    createdAt: row.created_at,
+    ...customer,
+    createdAt: customer.created_at,
   };
 }
 
@@ -15,10 +22,12 @@ export async function getCustomers() {
 
   if (error) throw error;
 
-  return (data ?? []).map(normalizeCustomer);
+  const customers = parseApiList(customerRowSchema, data ?? [], 'getCustomers');
+  return customers.map(normalizeCustomer);
 }
 
-export async function createCustomer({ nome, email, telefone }) {
+export async function createCustomer(payload) {
+  const { nome, email, telefone } = createCustomerInputSchema.parse(payload);
   const { data, error } = await supabase
     .from('clientes')
     .insert({ nome, email, telefone })
@@ -26,10 +35,12 @@ export async function createCustomer({ nome, email, telefone }) {
     .single();
 
   if (error) throw error;
-  return normalizeCustomer(data);
+  const customer = parseApi(customerRowSchema, data, 'createCustomer');
+  return normalizeCustomer(customer);
 }
 
-export async function updateCustomer({ id, nome, email, telefone }) {
+export async function updateCustomer(payload) {
+  const { id, nome, email, telefone } = updateCustomerInputSchema.parse(payload);
   const { data, error } = await supabase
     .from('clientes')
     .update({ nome, email, telefone })
@@ -38,5 +49,6 @@ export async function updateCustomer({ id, nome, email, telefone }) {
     .single();
 
   if (error) throw error;
-  return normalizeCustomer(data);
+  const customer = parseApi(customerRowSchema, data, 'updateCustomer');
+  return normalizeCustomer(customer);
 }

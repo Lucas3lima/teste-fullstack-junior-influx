@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import PaginationControls from '@/components/shared/PaginationControls';
 
-function CustomersTable({ customers }) {
+function CustomersTable({ customers, onEdit }) {
   const pageSize = 10;
   const [page, setPage] = useState(1);
 
@@ -81,7 +81,12 @@ function CustomersTable({ customers }) {
                     {formatDate(customer.createdAt)}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button variant="outline" size="sm" type="button">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={() => onEdit?.(customer)}
+                    >
                       Editar
                     </Button>
                   </td>

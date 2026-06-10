@@ -89,3 +89,55 @@ create policy ordens_update_public
   to anon, authenticated
   using (true)
   with check (true);
+
+begin;
+-- 1) Clientes (7)
+insert into public.clientes (nome, email, telefone)
+values
+  ('Lucas Lima', 'lucas.lima@email.com', '(11) 98811-1001'),
+  ('Mariana Souza', 'mariana.souza@email.com', '(11) 98811-1002'),
+  ('Rafael Costa', 'rafael.costa@email.com', '(11) 98811-1003'),
+  ('Camila Rocha', 'camila.rocha@email.com', '(11) 98811-1004'),
+  ('Bruno Martins', 'bruno.martins@email.com', '(11) 98811-1005'),
+  ('Fernanda Alves', 'fernanda.alves@email.com', '(11) 98811-1006'),
+  ('Thiago Mendes', 'thiago.mendes@email.com', '(11) 98811-1007')
+on conflict (email) do update
+set
+  nome = excluded.nome,
+  telefone = excluded.telefone;
+-- 2) OS (20)
+with c as (
+  select id, email from public.clientes
+  where email in (
+    'lucas.lima@email.com',
+    'mariana.souza@email.com',
+    'rafael.costa@email.com',
+    'camila.rocha@email.com',
+    'bruno.martins@email.com',
+    'fernanda.alves@email.com',
+    'thiago.mendes@email.com'
+  )
+)
+insert into public.ordens_servico (cliente_id, descricao, valor, status, created_at)
+values
+  ((select id from c where email = 'lucas.lima@email.com'), 'Troca de tela de iPhone 11', 890.00, 'Finalizada', now() - interval '20 days'),
+  ((select id from c where email = 'mariana.souza@email.com'), 'Bateria descarregando rapido no Samsung A52', 280.00, 'Em Andamento', now() - interval '19 days'),
+  ((select id from c where email = 'rafael.costa@email.com'), 'Notebook nao liga apos queda de energia', 450.00, 'Pendente', now() - interval '18 days'),
+  ((select id from c where email = 'camila.rocha@email.com'), 'Limpeza interna e troca de pasta termica', 220.00, 'Finalizada', now() - interval '17 days'),
+  ((select id from c where email = 'bruno.martins@email.com'), 'Conector de carga do Moto G com folga', 190.00, 'Cancelada', now() - interval '16 days'),
+  ((select id from c where email = 'fernanda.alves@email.com'), 'Tela de tablet trincada', 360.00, 'Em Andamento', now() - interval '15 days'),
+  ((select id from c where email = 'thiago.mendes@email.com'), 'Formatacao e backup de notebook', 300.00, 'Finalizada', now() - interval '14 days'),
+  ((select id from c where email = 'lucas.lima@email.com'), 'Troca de alto-falante de smartphone', 170.00, 'Pendente', now() - interval '13 days'),
+  ((select id from c where email = 'mariana.souza@email.com'), 'Problema no botao power', 140.00, 'Finalizada', now() - interval '12 days'),
+  ((select id from c where email = 'rafael.costa@email.com'), 'Teclado de notebook com teclas falhando', 260.00, 'Em Andamento', now() - interval '11 days'),
+  ((select id from c where email = 'camila.rocha@email.com'), 'Substituicao de webcam', 180.00, 'Pendente', now() - interval '10 days'),
+  ((select id from c where email = 'bruno.martins@email.com'), 'Recuperacao de sistema corrompido', 520.00, 'Finalizada', now() - interval '9 days'),
+  ((select id from c where email = 'fernanda.alves@email.com'), 'Troca de microfone de celular', 160.00, 'Cancelada', now() - interval '8 days'),
+  ((select id from c where email = 'thiago.mendes@email.com'), 'Reparo em dobradica de notebook', 240.00, 'Em Andamento', now() - interval '7 days'),
+  ((select id from c where email = 'lucas.lima@email.com'), 'Celular sem sinal de rede', 210.00, 'Pendente', now() - interval '6 days'),
+  ((select id from c where email = 'mariana.souza@email.com'), 'Troca de bateria de notebook Dell', 390.00, 'Finalizada', now() - interval '5 days'),
+  ((select id from c where email = 'rafael.costa@email.com'), 'Audio chiando em chamada', 130.00, 'Pendente', now() - interval '4 days'),
+  ((select id from c where email = 'camila.rocha@email.com'), 'Troca de touch de tablet Samsung', 410.00, 'Em Andamento', now() - interval '3 days'),
+  ((select id from c where email = 'bruno.martins@email.com'), 'Atualizacao de SSD e clonagem de disco', 650.00, 'Finalizada', now() - interval '2 days'),
+  ((select id from c where email = 'fernanda.alves@email.com'), 'Aparelho molhou e nao liga', 480.00, 'Pendente', now() - interval '1 day');
+commit;

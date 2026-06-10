@@ -3,6 +3,7 @@ import { Menu, Wrench } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { SidebarNav } from './SidebarNav';
 import { Separator } from '@/components/ui/separator';
+import { ThemeToggleButton } from './ThemeToggleButton';
 
 export function MobileSidebar() {
   const [open, setOpen] = useState(false);
@@ -37,7 +38,12 @@ export function MobileSidebar() {
 
           <Separator />
 
-          <SidebarNav onNavigate={() => setOpen(false)} />
+          <div className="flex h-full flex-col">
+            <SidebarNav onNavigate={() => setOpen(false)} />
+            <div className="mt-auto px-2 pb-2">
+              <ThemeToggleButton className="w-full justify-start" />
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
     </>

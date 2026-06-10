@@ -9,7 +9,7 @@ function NotFoundPage() {
   return (
     <section className="space-y-2">
       <h2 className="text-2xl font-bold">Pagina nao encontrada</h2>
-      <p className="text-slate-300">
+      <p className="text-muted-foreground">
         A rota informada nao existe. Voce pode voltar para o dashboard.
       </p>
     </section>

@@ -1,6 +1,7 @@
 import { Wrench } from 'lucide-react';
 import { SidebarNav } from './SidebarNav';
 import { Separator } from '@/components/ui/separator';
+import { ThemeToggleButton } from './ThemeToggleButton';
 
 export function DesktopSidebar() {
   return (
@@ -15,6 +16,10 @@ export function DesktopSidebar() {
       {/* Nav */}
       <div className="flex-1 overflow-y-auto py-2">
         <SidebarNav />
+      </div>
+
+      <div className="p-4 pt-2">
+        <ThemeToggleButton className="w-full justify-start" />
       </div>
     </aside>
   );

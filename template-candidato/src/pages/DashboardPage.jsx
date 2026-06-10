@@ -80,7 +80,7 @@ function DashboardPage() {
           title="Canceladas"
           value={canceladas}
           icon={XCircle}
-          iconClassName="text-slate-300"
+          iconClassName="text-slate-700 dark:text-slate-300"
         />
         <MetricCard
           title="Faturamento"

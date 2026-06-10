@@ -20,7 +20,7 @@ Este repositorio contem o projeto desenvolvido para o desafio tecnico de Desenvo
 1. Clone o repositorio:
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone <https://github.com/Lucas3lima/teste-fullstack-junior-influx>
 ```
 
 2. Entre na pasta do projeto:

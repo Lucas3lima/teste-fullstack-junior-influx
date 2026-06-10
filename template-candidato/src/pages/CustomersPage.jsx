@@ -103,7 +103,6 @@ function CustomersPage() {
       </div>
 
 
-
       {isError ? (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2">
           <p className="text-sm text-destructive">

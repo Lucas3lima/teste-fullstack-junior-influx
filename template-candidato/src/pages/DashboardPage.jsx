@@ -10,9 +10,11 @@ import MetricCard from '@/components/dashboard/MetricCard';
 import OrdersTable from '@/components/dashboard/OrdersTable';
 import { getOrders } from '@/api/orders';
 import { useQuery } from '@tanstack/react-query';
+import DashboardOrdersTableSkeleton from '@/components/dashboard/DashboardOrdersTableSkeleton';
+import MetricCardSkeleton from '@/components/dashboard/MetricCardSkeleton';
 
 function DashboardPage() {
-  const { data } = useQuery({
+  const { data, isFetching } = useQuery({
     queryKey: ['orders'],
     queryFn: getOrders,
     staleTime: 30_000,
@@ -52,49 +54,67 @@ function DashboardPage() {
       </header>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-        <MetricCard
-          title="Total de OS"
-          value={total}
-          icon={ListTodo}
-          iconClassName="text-blue-300"
-        />
-        <MetricCard
-          title="Pendentes"
-          value={pendentes}
-          icon={Clock3}
-          iconClassName="text-red-300"
-        />
-        <MetricCard
-          title="Em Andamento"
-          value={emAndamento}
-          icon={Activity}
-          iconClassName="text-amber-300"
-        />
-        <MetricCard
-          title="Finalizadas"
-          value={finalizadas}
-          icon={CheckCircle2}
-          iconClassName="text-emerald-300"
-        />
-        <MetricCard
-          title="Canceladas"
-          value={canceladas}
-          icon={XCircle}
-          iconClassName="text-slate-700 dark:text-slate-300"
-        />
-        <MetricCard
-          title="Faturamento"
-          value={formatCurrency(faturamento)}
-          icon={BadgeDollarSign}
-          iconClassName="text-blue-300"
-        />
+        {isFetching ? (
+          <>
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+            <MetricCardSkeleton />
+          
+          </>
+        ) : (
+          <>
+            <MetricCard
+              title="Total de OS"
+              value={total}
+              icon={ListTodo}
+              iconClassName="text-blue-300"
+            />
+            <MetricCard
+              title="Pendentes"
+              value={pendentes}
+              icon={Clock3}
+              iconClassName="text-red-300"
+            />
+            <MetricCard
+              title="Em Andamento"
+              value={emAndamento}
+              icon={Activity}
+              iconClassName="text-amber-300"
+            />
+            <MetricCard
+              title="Finalizadas"
+              value={finalizadas}
+              icon={CheckCircle2}
+              iconClassName="text-emerald-300"
+            />
+            <MetricCard
+              title="Canceladas"
+              value={canceladas}
+              icon={XCircle}
+              iconClassName="text-slate-700 dark:text-slate-300"
+            />
+            <MetricCard
+              title="Faturamento"
+              value={formatCurrency(faturamento)}
+              icon={BadgeDollarSign}
+              iconClassName="text-blue-300"
+            />
+          
+          </>
+        )}
       </div>
-
+      {isFetching ? (
+        <DashboardOrdersTableSkeleton />
+      ) : (
       <OrdersTable
         orders={latestOrders}
         formatCurrency={formatCurrency}
         formatDate={formatDate}
       />
+      )}
     </section>
   );
 }

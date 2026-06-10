@@ -28,8 +28,9 @@ function normalizeOrderListRow(row) {
   };
 }
 
-export async function getOrders() {
-  const { data, error } = await supabase
+export async function getOrders({ search, status } = {}) {
+  const normalizedSearch = search?.trim();
+  let query = supabase
     .from('ordens_servico')
     .select(`
       id,
@@ -39,8 +40,17 @@ export async function getOrders() {
       status,
       created_at,
       clientes(nome)
-    `)
-    .order('created_at', { ascending: false });
+    `);
+
+  if (status && status !== 'Todos') {
+    query = query.eq('status', status);
+  }
+
+  if (normalizedSearch) {
+    query = query.ilike('descricao', `%${normalizedSearch}%`);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) throw error;
 

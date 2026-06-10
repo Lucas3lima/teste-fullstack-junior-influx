@@ -15,21 +15,27 @@ import {
   getCustomers,
   updateCustomer,
 } from '@/api/customers';
+import { debounce, parseAsString, useQueryState } from 'nuqs';
 
 function CustomersPage() {
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [searchText, setSearchText] = useQueryState(
+    'q',
+    parseAsString.withDefault('').withOptions({ history: 'replace', shallow: true })
+  );
 
   const {
     data,
     isLoading,
+    isFetching,
     isError,
     error,
     refetch,
   } = useQuery({
-    queryKey: ['customers'],
-    queryFn: getCustomers,
+    queryKey: ['customers', searchText],
+    queryFn: () => getCustomers({ search: searchText }),
     staleTime: 30_000,
   });
 
@@ -81,8 +87,23 @@ function CustomersPage() {
       </header>
 
       <div className="flex items-center gap-2">
-        <SearchInput placeholder="Pesquisar cliente" />
+        <SearchInput
+          placeholder="Pesquisar cliente, email ou telefone"
+          value={searchText}
+          onChange={(event) =>
+            setSearchText(event.target.value, {
+              history: 'replace',
+              shallow: false,
+              limitUrlUpdates: event.target.value !== '' ? debounce(500) : undefined,
+            })
+          }
+          inputClassName="w-full sm:w-72"
+        />
       </div>
+
+      {!isLoading && isFetching ? (
+        <p className="text-sm text-muted-foreground">Buscando clientes...</p>
+      ) : null}
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Carregando clientes...</p>

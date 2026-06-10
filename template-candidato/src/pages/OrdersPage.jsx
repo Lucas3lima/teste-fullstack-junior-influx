@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
 import ServiceOrdersTable from '@/components/orders/ServiceOrdersTable';
@@ -9,6 +9,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import OrderFormOverlay from '@/components/orders/OrderFormOverlay';
 import OrderDetailsOverlay from '@/components/orders/OrderDetailsOverlay';
+import { debounce, parseAsString, useQueryState } from 'nuqs';
+import ServiceOrdersTableSkeleton from '@/components/orders/ServiceOrdersTableSkeleton';
 
 const STATUS_FILTERS = [
   'Todos',
@@ -20,14 +22,25 @@ const STATUS_FILTERS = [
 
 function OrdersPage() {
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState('Todos');
+  const [searchText, setSearchText] = useQueryState(
+    'q',
+    parseAsString.withDefault('').withOptions({ history: 'replace', shallow: true, limitUrlUpdates: debounce(500) })
+  );
+  const [statusFilter, setStatusFilter] = useQueryState(
+    'status',
+    parseAsString.withDefault('Todos').withOptions({ history: 'replace', shallow: true })
+  );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState(null);
   const [editingOrder, setEditingOrder] = useState(null);
 
-  const { data } = useQuery({
-    queryKey: ['orders'],
-    queryFn: getOrders,
+  const { data, isFetching } = useQuery({
+    queryKey: ['orders', searchText, statusFilter],
+    queryFn: () =>
+      getOrders({
+        search: searchText,
+        status: statusFilter,
+      }),
     staleTime: 30_000,
   });
   const { data: customersData } = useQuery({
@@ -38,13 +51,6 @@ function OrdersPage() {
 
   const orders = data ?? [];
   const customers = customersData ?? [];
-
-  const filteredOrders = useMemo(() => {
-    if (statusFilter === 'Todos') {
-      return orders;
-    }
-    return orders.filter((order) => order.status === statusFilter);
-  }, [orders, statusFilter]);
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat('pt-BR', {
@@ -121,7 +127,18 @@ function OrdersPage() {
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="w-full lg:max-w-md">
-          <SearchInput placeholder="Pesquisar ordem de servico" />
+          <SearchInput
+            placeholder="Pesquisar por cliente ou descricao"
+            value={searchText}
+            onChange={(event) =>
+              setSearchText(event.target.value, {
+                history: 'replace',
+                shallow: false,
+                limitUrlUpdates: event.target.value !== '' ? debounce(500) : undefined,
+              })
+            }
+            inputClassName="w-full"
+          />
         </div>
         <div className="flex flex-wrap gap-2 lg:justify-end">
           {STATUS_FILTERS.map((status) => (
@@ -130,7 +147,9 @@ function OrdersPage() {
               type="button"
               variant={statusFilter === status ? 'secondary' : 'ghost'}
               size="sm"
-              onClick={() => setStatusFilter(status)}
+              onClick={() =>
+                setStatusFilter(status, { history: 'replace', shallow: true })
+              }
             >
               {status}
             </Button>
@@ -138,12 +157,18 @@ function OrdersPage() {
         </div>
       </div>
 
-      <ServiceOrdersTable
-        orders={filteredOrders}
-        formatCurrency={formatCurrency}
-        formatDate={formatDate}
-        onOrderAction={handleOrderAction}
-      />
+      {isFetching ? (
+        <ServiceOrdersTableSkeleton />
+      ) : (
+        <ServiceOrdersTable
+          orders={orders}
+          formatCurrency={formatCurrency}
+          formatDate={formatDate}
+          onOrderAction={handleOrderAction}
+        />
+      )
+      }
+    
 
       <OrderFormOverlay
         open={isCreateOpen}

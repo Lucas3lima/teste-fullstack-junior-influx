@@ -14,11 +14,19 @@ function normalizeCustomer(row) {
   };
 }
 
-export async function getCustomers() {
-  const { data, error } = await supabase
+export async function getCustomers({ search } = {}) {
+  const normalizedSearch = search?.trim();
+  let query = supabase
     .from('clientes')
-    .select('id, nome, email, telefone, created_at')
-    .order('nome', { ascending: true });
+    .select('id, nome, email, telefone, created_at');
+
+  if (normalizedSearch) {
+    query = query.or(
+      `nome.ilike.%${normalizedSearch}%,email.ilike.%${normalizedSearch}%,telefone.ilike.%${normalizedSearch}%`
+    );
+  }
+
+  const { data, error } = await query.order('nome', { ascending: true });
 
   if (error) throw error;
 

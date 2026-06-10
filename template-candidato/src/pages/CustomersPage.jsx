@@ -16,6 +16,7 @@ import {
   updateCustomer,
 } from '@/api/customers';
 import { debounce, parseAsString, useQueryState } from 'nuqs';
+import CustomersTableSkeleton from '@/components/customers/CustomersTableSkeleton';
 
 function CustomersPage() {
   const queryClient = useQueryClient();
@@ -101,13 +102,7 @@ function CustomersPage() {
         />
       </div>
 
-      {!isLoading && isFetching ? (
-        <p className="text-sm text-muted-foreground">Buscando clientes...</p>
-      ) : null}
 
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando clientes...</p>
-      ) : null}
 
       {isError ? (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2">
@@ -126,10 +121,14 @@ function CustomersPage() {
         </div>
       ) : null}
 
-      <CustomersTable
+      {isFetching ? (
+        <CustomersTableSkeleton />
+      ) : (
+        <CustomersTable
         customers={customers}
         onEdit={(customer) => setEditingCustomer(customer)}
       />
+      )}
 
       <CustomerDialog
         open={isCreateOpen}

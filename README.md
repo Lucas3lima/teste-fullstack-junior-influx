@@ -75,8 +75,6 @@ O schema SQL esta em `template-candidato/schema.sql`.
 Dentro de `template-candidato/`:
 
 - `npm run dev`: inicia ambiente de desenvolvimento.
-- `npm run build`: gera build de producao.
-- `npm run lint`: executa o lint.
 
 ## Estrutura do repositorio
 

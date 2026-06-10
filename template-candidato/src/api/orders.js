@@ -30,31 +30,80 @@ function normalizeOrderListRow(row) {
 
 export async function getOrders({ search, status } = {}) {
   const normalizedSearch = search?.trim();
-  let query = supabase
-    .from('ordens_servico')
-    .select(`
+  // Evita quebrar a string raw do filtro PostgREST.
+  const sanitizedSearch = normalizedSearch?.replace(/[,%]/g, '').trim();
+  const baseSelect = `
       id,
       cliente_id,
       descricao,
       valor,
       status,
       created_at,
-      clientes(nome)
-    `);
+      clientes!inner(nome)
+    `;
 
-  if (status && status !== 'Todos') {
-    query = query.eq('status', status);
+  const applyStatusFilter = (queryBuilder) => {
+    if (status && status !== 'Todos') {
+      return queryBuilder.eq('status', status);
+    }
+    return queryBuilder;
+  };
+
+  if (!sanitizedSearch) {
+    // Sem texto: executa a consulta padrao (mais barata).
+    const defaultQuery = applyStatusFilter(
+      supabase.from('ordens_servico').select(baseSelect)
+    );
+    const { data, error } = await defaultQuery.order('created_at', {
+      ascending: false,
+    });
+
+    if (error) throw error;
+
+    const orders = parseApiList(orderListRowSchema, data ?? [], 'getOrders');
+    return orders.map(normalizeOrderListRow);
   }
 
-  if (normalizedSearch) {
-    query = query.ilike('descricao', `%${normalizedSearch}%`);
-  }
+  const searchPattern = `%${sanitizedSearch}%`;
+  // Busca por descricao na tabela principal.
+  const descriptionQuery = applyStatusFilter(
+    supabase
+      .from('ordens_servico')
+      .select(baseSelect)
+      .ilike('descricao', searchPattern)
+  );
+  // Busca por nome do cliente na tabela relacionada.
+  const customerQuery = applyStatusFilter(
+    supabase
+      .from('ordens_servico')
+      .select(baseSelect)
+      .ilike('clientes.nome', searchPattern)
+  );
 
-  const { data, error } = await query.order('created_at', { ascending: false });
+  const [
+    { data: descriptionData, error: descriptionError },
+    { data: customerData, error: customerError },
+  ] = await Promise.all([
+    descriptionQuery.order('created_at', { ascending: false }),
+    customerQuery.order('created_at', { ascending: false }),
+  ]);
 
-  if (error) throw error;
+  if (descriptionError) throw descriptionError;
+  if (customerError) throw customerError;
 
-  const orders = parseApiList(orderListRowSchema, data ?? [], 'getOrders');
+  // Merge em memoria:
+  // - evita OR misto (descricao + clientes.nome) que pode retornar 400 no PostgREST
+  // - remove duplicados quando a mesma OS bate nas duas buscas
+  const mergedById = new Map();
+  [...(descriptionData ?? []), ...(customerData ?? [])].forEach((row) => {
+    mergedById.set(row.id, row);
+  });
+
+  // Mantem ordenacao mais recente primeiro, igual a listagem padrao.
+  const mergedRows = Array.from(mergedById.values()).sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  const orders = parseApiList(orderListRowSchema, mergedRows, 'getOrders');
   return orders.map(normalizeOrderListRow);
 }
 

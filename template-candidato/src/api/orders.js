@@ -4,6 +4,7 @@ import {
   createOrderInputSchema,
   orderListRowSchema,
   orderRowSchema,
+  updateOrderStatusInputSchema,
   updateOrderInputSchema,
 } from '@/schemas/orders';
 
@@ -131,5 +132,19 @@ export async function updateOrder(payload) {
 
   if (error) throw error;
   const order = parseApi(orderRowSchema, data, 'updateOrder');
+  return normalizeOrder(order);
+}
+
+export async function updateOrderStatus(payload) {
+  const { id, status } = updateOrderStatusInputSchema.parse(payload);
+  const { data, error } = await supabase
+    .from('ordens_servico')
+    .update({ status })
+    .eq('id', id)
+    .select('id, cliente_id, descricao, valor, status, created_at')
+    .single();
+
+  if (error) throw error;
+  const order = parseApi(orderRowSchema, data, 'updateOrderStatus');
   return normalizeOrder(order);
 }

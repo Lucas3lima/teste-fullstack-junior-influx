@@ -99,9 +99,6 @@ function OrdersPage() {
       setEditingOrder(order);
       return;
     }
-
-    // Placeholder para proximas iteracoes (status e cancelamento).
-    console.log('order action', { orderId: order.id, actionKey });
   };
 
   return (

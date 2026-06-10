@@ -40,3 +40,8 @@ export const createOrderInputSchema = orderInputFieldsSchema;
 export const updateOrderInputSchema = orderInputFieldsSchema.extend({
   id: z.uuid(),
 });
+
+export const updateOrderStatusInputSchema = z.object({
+  id: z.uuid(),
+  status: orderStatusSchema,
+});
